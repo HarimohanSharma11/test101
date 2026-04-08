@@ -7,15 +7,15 @@
     let currentFilter = 'all';
     let editingId = null;
 
-    const todoForm = document.getElementById('todo-form');
-    const todoInput = document.getElementById('todo-input');
-    const todoList = document.getElementById('todo-list');
-    const todoCount = document.getElementById('todo-count');
-    const clearCompletedBtn = document.getElementById('clear-completed');
-    const filterButtons = document.querySelectorAll('.filter-btn');
+    let todoForm;
+    let todoInput;
+    let todoList;
+    let todoCount;
+    let clearCompletedBtn;
+    let filterButtons;
 
     function generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        return Date.now().toString(36) + Math.random().toString(36).slice(2);
     }
 
     function loadTodos() {
@@ -24,6 +24,7 @@
             todos = stored ? JSON.parse(stored) : [];
         } catch (e) {
             todos = [];
+            showNotification('Saved data was corrupted and could not be loaded. Starting fresh.', 'error');
         }
     }
 
@@ -32,6 +33,7 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
         } catch (e) {
             console.error('Failed to save todos to localStorage');
+            showNotification('Failed to save your todos. Storage may be full.', 'error');
         }
     }
 
@@ -203,7 +205,28 @@
         updateTodoCount();
     }
 
+    function showNotification(message, type) {
+        const existing = document.querySelector('.app-notification');
+        if (existing) existing.remove();
+
+        const notification = document.createElement('div');
+        notification.className = `app-notification app-notification--${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentNode) notification.remove();
+        }, 4000);
+    }
+
     function init() {
+        todoForm = document.getElementById('todo-form');
+        todoInput = document.getElementById('todo-input');
+        todoList = document.getElementById('todo-list');
+        todoCount = document.getElementById('todo-count');
+        clearCompletedBtn = document.getElementById('clear-completed');
+        filterButtons = document.querySelectorAll('.filter-btn');
+
         loadTodos();
 
         todoForm.addEventListener('submit', (e) => {
